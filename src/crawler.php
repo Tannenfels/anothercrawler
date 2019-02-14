@@ -33,15 +33,38 @@ class crawler {
             $age[] = (int)$resume->text('div[itemprop]=name > span');
             $profilePicUrl[] = $resume->attr('img[src]');
             $exp[] = (int)$resume->text('div[data-qa]=resume-serp__resume-excpirience-sum');
+            $this->save(end($hash), end($position),end($salary),end($age),end($profilePicUrl),end($exp));
         }
     }
 
-    public function save()
+    public function save($hash, $position, $salary, $age, $profilePicUrl, $exp)
     {
+        $dsn = ""; //эмуляция
+        $pdo = new \PDO($dsn);
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("INSERT INTO HASHES (hashid) VALUES (:hash)");
+            $stmt->bindParam(':hashid', $hash);
+            $stmt->execute();
+
+            $stmt = $pdo->prepare("INSERT INTO USERDATA (hashid, position, salary, age, profilePicUrl, exp) VALUES (:hashid, :position, :salary, :age, :profilePicUrl, :exp)");
+            $stmt->bindParam(':position', $position);
+            $stmt->bindParam(':salary', $salary);
+            $stmt->bindParam(':age', $age);
+            $stmt->bindParam(':profilePicUrl', $profilePicUrl);
+            $stmt->bindParam(':exp', $exp);
+            $stmt->execute();
+
+            $pdo->commit();
+
+        }catch (\Exception $e){
+            $pdo->rollBack();
+        }
     }
 }
-//$url = "https://hh.ru/search/resume";
 
 
 
